@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Raw Material Inventory Management</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* Global Styles */
+    :root {
+      --primary-color: #3498db;
+      --primary-dark: #2980b9;
+      --secondary-color: #2c3e50;
+      --background-color: #f0f4f8;
+      --card-background: #ffffff;
+      --text-color: #333333;
+      --border-color: #e0e0e0;
+      --success-color: #2ecc71;
+      --error-color: #e74c3c;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: var(--background-color);
+      color: var(--text-color);
+      line-height: 1.6;
+    }
+
+    header {
+      background-color: var(--secondary-color);
+      color: white;
+      text-align: center;
+      padding: 1rem 0;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+
+    #container {
+      display: flex;
+      min-height: calc(100vh - 120px);
+    }
+
+    nav {
+      background-color: var(--secondary-color);
+      width: 250px;
+      transform: translateX(-250px);
+      transition: transform 0.3s ease-in-out;
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      z-index: 1000;
+      padding-top: 60px;
+    }
+
+    nav.open {
+      transform: translateX(0);
+    }
+
+    nav ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    nav ul li {
+      padding: 0;
+    }
+
+    nav ul li a {
+      display: block;
+      text-decoration: none;
+      color: #ecf0f1;
+      font-weight: 500;
+      padding: 1rem 1.5rem;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    nav ul li a:hover, nav ul li a:focus {
+      background-color: rgba(255, 255, 255, 0.1);
+      color: var(--primary-color);
+    }
+
+    main {
+      flex-grow: 1;
+      padding: 2rem;
+      margin-left: 0;
+      transition: margin-left 0.3s ease-in-out;
+    }
+
+    main.nav-open {
+      margin-left: 250px;
+    }
+
+    .menu-toggle {
+      position: fixed;
+      top: 1rem;
+      left: 1rem;
+      z-index: 1001;
+      background: none;
+      border: none;
+      color: white;
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0.5rem;
+      border-radius: 4px;
+      transition: background-color 0.3s ease;
+    }
+
+    .menu-toggle:hover, .menu-toggle:focus {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .card {
+      background-color: var(--card-background);
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      padding: 2rem;
+      margin-bottom: 2rem;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    form {
+      display: grid;
+      gap: 1.5rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    form label {
+      font-weight: 500;
+      color: var(--secondary-color);
+      margin-bottom: 0.5rem;
+    }
+
+    form input {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 1rem;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    form input:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      font-weight: 500;
+      text-align: center;
+      text-decoration: none;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.1s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn:active {
+      transform: translateY(1px);
+    }
+
+    .btn-primary {
+      background-color: var(--primary-color);
+      color: white;
+    }
+
+    .btn-primary:hover, .btn-primary:focus {
+      background-color: var(--primary-dark);
+    }
+
+    .btn-secondary {
+      background-color: #95a5a6;
+      color: white;
+    }
+
+    .btn-secondary:hover, .btn-secondary:focus {
+      background-color: #7f8c8d;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 1rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1.5rem;
+      background-color: var(--card-background);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    table, th, td {
+      border: 1px solid var(--border-color);
+    }
+
+    th, td {
+      padding: 1rem;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f8f9fa;
+      font-weight: 600;
+      color: var(--secondary-color);
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .title {
+      color: var(--secondary-color);
+      margin-bottom: 1.5rem;
+      font-size: 1.5rem;
+      font-weight: 600;
+      border-bottom: 2px solid var(--primary-color);
+      padding-bottom: 0.5rem;
+    }
+
+    footer {
+      background-color: var(--secondary-color);
+      color: white;
+      text-align: center;
+      padding: 1rem 0;
+      font-size: 0.875rem;
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .fade-in {
+      animation: fadeIn 0.5s ease-in-out;
+    }
+
+    @keyframes slideIn {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .slide-in {
+      animation: slideIn 0.5s ease-in-out;
+    }
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+      main {
+        padding: 1rem;
+      }
+
+      .card {
+        padding: 1.5rem;
+      }
+
+      .btn-group {
+        flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <button class="menu-toggle" onclick="toggleNav()">☰</button>
+  
+  <header>
+    <h1>Raw Material Inventory Management</h1>
+  </header>
+
+  <div id="container">
+    <nav id="sidebar">
+      <ul>
+        <li><a href="#" onclick="showPage('itemManagement')">Item Management</a></li>
+        <li><a href="#" onclick="showPage('itemReceived')">Item Received</a></li>
+        <li><a href="#" onclick="showPage('itemIssue')">Item Issue</a></li>
+        <li><a href="#" onclick="showPage('itemReport')">Item Report</a></li>
+      </ul>
+    </nav>
+
+    <main id="main-content">
+      <div id="itemManagement" class="card fade-in">
+        <h2 class="title">Item Management</h2>
+        <form id="itemForm" class="slide-in">
+          <div class="form-group">
+            <label for="itemId">Item ID:</label>
+            <input type="text" id="itemId" required>
+          </div>
+          <div class="btn-group">
+            <button type="button" class="btn btn-secondary" onclick="fetchItem()">Fetch</button>
+          </div>
+          <div class="form-group">
+            <label for="itemName">Item Name:</label>
+            <input type="text" id="itemName" required>
+          </div>
+          <div class="form-group">
+            <label for="openingStock">Opening Stock:</label>
+            <input type="number" id="openingStock" step="0.001" required>
+          </div>
+          <div class="form-group">
+            <label for="uom">Unit of Measurement (UoM):</label>
+            <input type="text" id="uom" maxlength="10" required>
+          </div>
+          <div class="btn-group">
+            <button type="button" class="btn btn-primary" onclick="saveItem()">Save</button>
+            <button type="reset" class="btn btn-secondary">Reset</button>
+          </div>
+        </form>
+      </div>
+
+      <div id="itemReceived" class="card fade-in hidden">
+        <h2 class="title">Item Received (Inward)</h2>
+        <form id="inwardForm" class="slide-in">
+          <div class="form-group">
+            <label for="receiptNo">Receipt No:</label>
+            <input type="text" id="receiptNo" required>
+          </div>
+          <div class="btn-group">
+            <button type="button" class="btn btn-secondary" onclick="fetchReceipt()">Fetch</button>
+          </div>
+          <div class="form-group">
+            <label for="receiptDate">Receipt Date:</label>
+            <input type="date" id="receiptDate" required>
+          </div>
+          <div class="form-group">
+            <label for="itemIdInward">Item ID:</label>
+            <input type="text" id="itemIdInward" required>
+          </div>
+          <div class="form-group">
+            <label for="qtyReceived">Quantity Received:</label>
+            <input type="number" id="qtyReceived" step="0.001" required>
+          </div>
+          <div class="btn-group">
+            <button type="button" class="btn btn-primary" onclick="saveReceipt()">Save</button>
+            <button type="reset" class="btn btn-secondary">Reset</button>
+          </div>
+        </form>
+      </div>
+
+      <div id="itemIssue" class="card fade-in hidden">
+        <h2 class="title">Item Issue (Outward)</h2>
+        <form id="outwardForm" class="slide-in">
+          <div class="form-group">
+            <label for="issueNo">Issue No:</label>
+            <input type="text" id="issueNo" required>
+          </div>
+          <div class="btn-group">
+            <button type="button" class="btn btn-secondary" onclick="fetchIssue()">Fetch</button>
+          </div>
+          <div class="form-group">
+            <label for="issueDate">Issue Date:</label>
+            <input type="date" id="issueDate" required>
+          </div>
+          <div class="form-group">
+            <label for="itemIdOutward">Item ID:</label>
+            <input type="text" id="itemIdOutward" required>
+          </div>
+          <div class="form-group">
+            <label for="qtyIssued">Quantity Issued:</label>
+            <input type="number" id="qtyIssued" step="0.001" required>
+          </div>
+          <div class="btn-group">
+            <button type="button" class="btn btn-primary" onclick="saveIssue()">Save</button>
+            <button type="reset" class="btn btn-secondary">Reset</button>
+          </div>
+        </form>
+      </div>
+
+      <div id="itemReport" class="card fade-in hidden">
+        <h2 class="title">Item Report</h2>
+        <form id="reportForm" class="slide-in">
+          <div class="form-group">
+            <label for="startId">Start Item ID:</label>
+            <input type="text" id="startId" required>
+          </div>
+          <div class="form-group">
+            <label for="endId">End Item ID:</label>
+            <input type="text" id="endId" required>
+          </div>
+          <div class="btn-group">
+            <button type="button" class="btn btn-primary" onclick="generateReport()">Generate Report</button>
+          </div>
+        </form>
+        <table id="reportTable">
+          <thead>
+            <tr>
+              <th>Item ID</th>
+              <th>Item Name</th>
+              <th>Current Stock</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <footer>
+    <p>&copy; 2024 Raw Material Inventory Management System</p>
+  </footer>
+
+  <script>
+    const API_URL = "YOUR_API_URL";
+    const API_TOKEN = "YOUR_API_TOKEN_HERE";
+
+    function toggleNav() {
+      const sidebar = document.getElementById('sidebar');
+      const mainContent = document.getElementById('main-content');
+      sidebar.classList.toggle('open');
+      mainContent.classList.toggle('nav-open');
+    }
+
+    function showPage(pageId) {
+      const pages = ["itemManagement", "itemReceived", "itemIssue", "itemReport"];
+      pages.forEach(page => {
+        const element = document.getElementById(page);
+        if (page === pageId) {
+          element.classList.remove("hidden");
+          element.classList.add("fade-in");
+        } else {
+          element.classList.add("hidden");
+          element.classList.remove("fade-in");
+        }
+      });
+      
+      if (window.innerWidth <= 768) {
+        toggleNav(); // Close nav on mobile after selection
+      }
+    }
+
+    async function fetchItem() {
+      const itemId = document.getElementById("itemId").value;
+      if (!itemId) return alert("Please enter an Item ID!");
+      try {
+        const response = await fetch(`${API_URL}/item/${itemId}`, {
+          headers: { Authorization: `Bearer ${API_TOKEN}` },
+        });
+        if (response.ok) {
+          const item = await response.json();
+          document.getElementById("itemName").value = item.name;
+          document.getElementById("openingStock").value = item.openingStock;
+          document.getElementById("uom").value = item.uom;
+        } else {
+          throw new Error("Item not found!");
+        }
+      } catch (error) {
+        alert(error.message);
+      }
+    }
+
+    async function saveItem() {
+      const itemId = document.getElementById("itemId").value;
+      const itemName = document.getElementById("itemName").value;
+      const openingStock = document.getElementById("openingStock").value;
+      const uom = document.getElementById("uom").value;
+      if (!itemId || !itemName || !openingStock || !uom) return alert("Please fill all fields!");
+      const item = { itemId, name: itemName, openingStock: parseFloat(openingStock), uom };
+      try {
+        const response = await fetch(`${API_URL}/item`, {
+          method: "POST",
+          headers: { 
+            "Content-Type": "application/json", 
+            Authorization: `Bearer ${API_TOKEN}` 
+          },
+          body: JSON.stringify(item),
+        });
+        if (response.ok) {
+          alert("Item saved successfully!");
+        } else {
+          throw new Error("Error saving item!");
+        }
+      } catch (error) {
+        alert(error.message);
+      }
+    }
+
+    async function saveReceipt() {
+      const receiptNo = document.getElementById("receiptNo").value;
+      const receiptDate = document.getElementById("receiptDate").value;
+      const itemId = document.getElementById("itemIdInward").value;
+      const qtyReceived = document.getElementById("qtyReceived").value;
+      if (!receiptNo || !receiptDate || !itemId || !qtyReceived) return alert("Please fill all fields!");
+      const receipt = { receiptNo, receiptDate, itemId, qtyReceived: parseFloat(qtyReceived) };
+      try {
+        const response = await fetch(`${API_URL}/receipt`, {
+          method: "POST",
+          headers: { 
+            "Content-Type": "application/json", 
+            Authorization: `Bearer ${API_TOKEN}` 
+          },
+          body: JSON.stringify(receipt),
+        });
+        if (response.ok) {
+          alert("Receipt saved successfully!");
+        } else {
+          throw new Error("Error saving receipt!");
+        }
+      } catch (error) {
+        alert(error.message);
+      }
+    }
+
+    async function saveIssue() {
+      const issueNo = document.getElementById("issueNo").value;
+      const issueDate = document.getElementById("issueDate").value;
+      const itemId = document.getElementById("itemIdOutward").value;
+      const qtyIssued = document.getElementById("qtyIssued").value;
+      if (!issueNo || !issueDate || !itemId || !qtyIssued) return alert("Please fill all fields!");
+      const issue = { issueNo, issueDate, itemId, qtyIssued: parseFloat(qtyIssued) };
+      try {
+        const response = await fetch(`${API_URL}/issue`, {
+          method: "POST",
+          headers: { 
+            "Content-Type": "application/json", 
+            Authorization: `Bearer ${API_TOKEN}` 
+          },
+          body: JSON.stringify(issue),
+        });
+        if (response.ok) {
+          alert("Issue saved successfully!");
+        } else {
+          throw new Error("Error saving issue!");
+        }
+      } catch (error) {
+        alert(error.message);
+      }
+    }
+
+    async function generateReport() {
+      const startId = document.getElementById("startId").value;
+      const endId = document.getElementById("endId").value;
+      if (!startId || !endId) return alert("Please enter both Start and End Item IDs!");
+      try {
+        const response = await fetch(`${API_URL}/report?startId=${startId}&endId=${endId}`, {
+          headers: { Authorization: `Bearer ${API_TOKEN}` },
+        });
+        if (response.ok) {
+          const reportData = await response.json();
+          const reportTable = document.getElementById("reportTable").getElementsByTagName('tbody')[0];
+          reportTable.innerHTML = ''; // Clear existing rows
+          reportData.forEach(item => {
+            const row = reportTable.insertRow();
+            row.insertCell(0).textContent = item.itemId;
+            row.insertCell(1).textContent = item.itemName;
+            row.insertCell(2).textContent = item.currentStock;
+          });
+        } else {
+          throw new Error("Error generating report!");
+        }
+      } catch (error) {
+        alert(error.message);
+      }
+    }
+  </script>
+</body>
+</html>
+
